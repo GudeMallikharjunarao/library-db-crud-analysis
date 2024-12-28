@@ -1,0 +1,96 @@
+SELECT * from employees;
+SELECT * from books;
+SELECT * from members;
+SELECT * from issued_status;
+select * from return_status;
+select * from branch;
+
+
+--1.How many employees are working in each branch?
+
+select e.branch_id,count(e.emp_id) as employee_count
+from employees e
+join branch b on e.branch_id = b.branch_id
+group by 1
+order by count(e.emp_id) desc;
+
+
+
+2.Find the highest and lowest salary among employees in each branch.
+
+select branch_id,max(salary) as max_salary,min(salary) as min_salary
+from employees
+group by branch_id;
+
+
+
+3.List all members who registered in the last 180 days.
+
+SELECT * 
+FROM members
+WHERE reg_date >= CURRENT_DATE - INTERVAL '180 days';
+
+
+
+--4. Find the total rental price of all books currently issue
+
+select sum(b.rental_price) as total_revenue
+from books b join issued_status i
+on b.isbn = i.issued_book_isbn;
+
+
+---5.Identify the top 5 most issued books based on issued_status.
+
+select issued_book_isbn,count(*) as issue_count
+from issued_status
+group By issued_book_isbn
+order By issue_count desc;
+
+
+---6. Find the employee who issued the most books.
+
+SELECT issued_emp_id, COUNT(*) AS books_issued
+FROM issued_status
+GROUP BY issued_emp_id
+ORDER BY books_issued DESC
+LIMIT 1;
+
+
+
+--7.What is the average salary of employees across all branches?
+
+select e.branch_id,avg(e.salary) as average_salary from employees e
+join branch b on e.branch_id = b.branch_id
+group by e.branch_id;
+
+--8.Who are the top 3 members who frequently issue books?
+
+select issued_member_id,count(*) as issued_members_count
+from issued_status
+group by issued_member_id
+order by issued_members_count desc
+limit 3;
+
+
+--9.Which branch has served the highest number of unique members?
+
+select e.branch_id,
+count(distinct i.issued_member_id) as unique_members_served
+from issued_status i join employees e
+on i.issued_emp_id = e.emp_id
+group by e.branch_id
+order by unique_members_served desc
+limit 3;
+
+---10. "Find the top 3 members who have generated the highest total rental income,
+and for each member, list their total rental income along with the number of unique books they have issued
+
+select i.issued_member_id,m.member_name,
+sum(b.rental_price) as total_rental_income,
+count(distinct i.issued_book_isbn) as unique_issued_books
+from issued_status i
+join books b on b.isbn = i.issued_book_isbn
+join members m on i.issued_member_id = m.member_id
+group by i.issued_member_id,m.member_name
+order by total_rental_income desc
+limit 3;
